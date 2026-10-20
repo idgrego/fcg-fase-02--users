@@ -35,8 +35,16 @@ A solução é organizada segundo a **Clean Architecture** (Arquitetura Limpa), 
 ```text
 fcg-fase-02--users/
 ├── FCG02.UsersAPI.slnx           # Solução .NET 10 no formato moderno slnx
-├── docs/
-│   └── architecture.md           # Documentação arquitetural do serviço
+├── README.md                     # Visão geral do repositório e guia de execução
+├── docs/                         # Documentação técnica detalhada
+│   ├── index.md                  # Índice geral da documentação
+│   ├── architecture.md           # Visão arquitetural e padrões de design
+│   ├── domain.md                 # Camada de Domínio e DDD
+│   ├── application.md            # Camada de Aplicação e Casos de Uso
+│   ├── infrastructure.md         # Camada de Infraestrutura, EF Core e RabbitMQ
+│   ├── api.md                    # Camada de Apresentação, Minimal APIs e JWT
+│   ├── tests.md                  # Suíte de testes unitários com xUnit e Moq
+│   └── docker.md                 # Containerização com Docker Multi-stage
 ├── src/
 │   ├── FCG02.UsersAPI.Domain/          # Núcleo: Entidades, Value Objects, Enums e Interfaces de Repositório
 │   ├── FCG02.UsersAPI.Application/     # Casos de uso: DTOs, Services/Use Cases, Interfaces (Token, Eventos)
@@ -126,3 +134,12 @@ Ao persistir um novo usuário com sucesso no PostgreSQL:
      "role": "gamer"
    }
    ```
+
+---
+
+## 5. Navegação
+
+- 🏠 **[Voltar para o Índice da Documentação (index.md)](index.md)**
+- ➡️ **[Avançar para a Camada de Domínio (domain.md)](domain.md)**
+- ⚙️ **[Avançar para a Camada de Aplicação (application.md)](application.md)**
+- 🚀 **[Voltar para o README Principal](../README.md)**
