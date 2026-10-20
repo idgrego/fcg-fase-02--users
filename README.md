@@ -39,11 +39,11 @@ O ecossistema é composto por **5 repositórios Git independentes**:
 
 | Repositório | Descrição | Link do Repositório |
 |---|---|---|
-| **`fcg-fase-02--users`** | **UsersAPI (Este repositório):** Microsserviço de gestão de identidade, usuários, emissão de tokens JWT e controle de papéis (`Anonymous`, `Gamer`, `Admin`). | [github.com/SEU_USUARIO/fcg-fase-02--users](https://github.com/SEU_USUARIO/fcg-fase-02--users) |
-| **`fcg-fase-02--catalog`** | **CatalogAPI:** Gestão do catálogo de jogos, biblioteca do jogador, controle de compras e consumo de confirmações de pagamento. | [github.com/SEU_USUARIO/fcg-fase-02--catalog](https://github.com/SEU_USUARIO/fcg-fase-02--catalog) |
-| **`fcg-fase-02--payments`** | **PaymentsAPI:** Simulador de gateway financeiro de pagamentos, validação de transações e emissão de eventos de resultado. | [github.com/SEU_USUARIO/fcg-fase-02--payments](https://github.com/SEU_USUARIO/fcg-fase-02--payments) |
-| **`fcg-fase-02--notifications`** | **NotificationsAPI:** Central assíncrona de envio de e-mails transacionais (boas-vindas, confirmação de compra e falhas). | [github.com/SEU_USUARIO/fcg-fase-02--notifications](https://github.com/SEU_USUARIO/fcg-fase-02--notifications) |
-| **`fcg-fase-02--orchestration`** | **Orquestração Local:** Docker Compose unificado com toda a infraestrutura (PostgreSQL, RabbitMQ) e integração dos microsserviços. | [github.com/SEU_USUARIO/fcg-fase-02--orchestration](https://github.com/SEU_USUARIO/fcg-fase-02--orchestration) |
+| **`fcg-fase-02--users`** | **UsersAPI (Este repositório):** Microsserviço de gestão de identidade, usuários, emissão de tokens JWT e controle de papéis (`Anonymous`, `Gamer`, `Admin`). | [github.com/idgrego/fcg-fase-02--users](https://github.com/idgrego/fcg-fase-02--users) |
+| **`fcg-fase-02--catalog`** | **CatalogAPI:** Gestão do catálogo de jogos, biblioteca do jogador, controle de compras e consumo de confirmações de pagamento. | [github.com/idgrego/fcg-fase-02--catalog](https://github.com/idgrego/fcg-fase-02--catalog) |
+| **`fcg-fase-02--payments`** | **PaymentsAPI:** Simulador de gateway financeiro de pagamentos, validação de transações e emissão de eventos de resultado. | [github.com/idgrego/fcg-fase-02--payments](https://github.com/idgrego/fcg-fase-02--payments) |
+| **`fcg-fase-02--notifications`** | **NotificationsAPI:** Central assíncrona de envio de e-mails transacionais (boas-vindas, confirmação de compra e falhas). | [github.com/idgrego/fcg-fase-02--notifications](https://github.com/idgrego/fcg-fase-02--notifications) |
+| **`fcg-fase-02--orchestration`** | **Orquestração Local:** Docker Compose unificado com toda a infraestrutura (PostgreSQL, RabbitMQ) e integração dos microsserviços. | [github.com/idgrego/fcg-fase-02--orchestration](https://github.com/idgrego/fcg-fase-02--orchestration) |
 
 ### 1.2. Topologia de Pastas Recomendada
 
@@ -60,11 +60,11 @@ meu-diretorio-de-projetos/
 
 ```powershell
 # Comandos para clonar os 5 repositórios:
-git clone https://github.com/SEU_USUARIO/fcg-fase-02--users.git
-git clone https://github.com/SEU_USUARIO/fcg-fase-02--catalog.git
-git clone https://github.com/SEU_USUARIO/fcg-fase-02--payments.git
-git clone https://github.com/SEU_USUARIO/fcg-fase-02--notifications.git
-git clone https://github.com/SEU_USUARIO/fcg-fase-02--orchestration.git
+git clone https://github.com/idgrego/fcg-fase-02--users.git
+git clone https://github.com/idgrego/fcg-fase-02--catalog.git
+git clone https://github.com/idgrego/fcg-fase-02--payments.git
+git clone https://github.com/idgrego/fcg-fase-02--notifications.git
+git clone https://github.com/idgrego/fcg-fase-02--orchestration.git
 ```
 
 ---
