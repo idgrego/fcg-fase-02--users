@@ -206,16 +206,18 @@ public sealed partial record Email
         if (sanitized.Length > MaxLength)
             throw new ArgumentException($"O e-mail não pode ter mais de {MaxLength} caracteres.", nameof(value));
 
-        if (!EmailRegex().IsMatch(sanitized))
+        if (!EmailRegex.IsMatch(sanitized))
             throw new ArgumentException("O formato do e-mail é inválido.", nameof(value));
 
         Value = sanitized;
     }
 
-    // Source Generator do .NET 10: compila o autômato da expressão regular em tempo de build,
-    // garantindo zero alocação de reflexão em runtime e total compatibilidade com Native AOT.
-    [GeneratedRegex(@"^[^@\s]+@[^@\s]+\.[^@\s]+$", RegexOptions.Compiled | RegexOptions.IgnoreCase)]
-    private static partial Regex EmailRegex();
+    // Instância estática pré-compilada da Regex via construtor estático (RegexOptions.Compiled)
+    private static readonly Regex EmailRegex;
+    static Email()
+    {
+        EmailRegex = new Regex(@"^[^@\s]+@[^@\s]+\.[^@\s]+$", RegexOptions.Compiled | RegexOptions.IgnoreCase);
+    }
 
     // Permite converter implicitamente o objeto Email para string sem precisar de .Value
     public static implicit operator string(Email email) => email.Value;

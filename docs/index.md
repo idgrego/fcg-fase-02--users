@@ -52,7 +52,7 @@ Visão geral da Clean Architecture adotada, regras de dependência estrita, moti
 ### 2. [🧩 Camada de Domínio (`domain.md`)](domain.md)
 Detalhamento do núcleo de negócio:
 - Entidade rica `User` com propriedades encapsuladas e invariantes protegidas.
-- Value Object `Email` eliminando o antipadrão *Primitive Obsession*, com Regex compilada em build time via `[GeneratedRegex]`.
+- Value Object `Email` eliminando o antipadrão *Primitive Obsession*, com Expressão Regular pré-compilada (`RegexOptions.Compiled`).
 - Enum `UserRole` e interface de repositório `IUserRepository` (Inversão de Dependência).
 
 ### 3. [⚙️ Camada de Aplicação (`application.md`)](application.md)

@@ -72,7 +72,10 @@ public class RabbitMqEventPublisher : IEventPublisher, IAsyncDisposable
 
             var payload = JsonSerializer.Serialize(@event, new JsonSerializerOptions
             {
-                PropertyNamingPolicy = JsonNamingPolicy.CamelCase
+                PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
+                Converters = { new System.Text.Json.Serialization.JsonStringEnumConverter() }
+                // a instrução Converters acima garante que as enumerações são passadas como texto e não como número.
+                //(Dessa forma o payload trafega como "role": "Gamer", respeitando o padrão EDA de eventos autodescritivos e legíveis).
             });
             var body = Encoding.UTF8.GetBytes(payload);
 

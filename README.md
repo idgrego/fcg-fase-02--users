@@ -11,173 +11,175 @@
 
 ---
 
+> 🌐 **Documentação Principal e Orquestração do Ecossistema:**  
+> A visão geral de toda a solução distribuída, a topologia de pastas, a arquitetura de redes e o guia para inicialização unificada de todos os microsserviços e bancos de dados estão centralizadas no repositório de **Orquestração**:  
+> 👉 **[🚀 Acessar Ponto de Partida & Orquestração (`fcg-fase-02--orchestration`)](../fcg-fase-02--orchestration/README.md)** | [Repositório GitHub](https://github.com/idgrego/fcg-fase-02--orchestration)
+
+---
+
 ## 📑 Sumário
 
-- [1. Visão Geral da Fase 02](#1-visão-geral-da-fase-02)
-  - [1.1. Os 5 Repositórios do Ecossistema](#11-os-5-repositórios-do-ecossistema)
-  - [1.2. Topologia de Pastas Recomendada](#12-topologia-de-pastas-recomendada)
-- [2. O Microsserviço UsersAPI](#2-o-microsserviço-usersapi)
-  - [2.1. Responsabilidades e Funcionalidades](#21-responsabilidades-e-funcionalidades)
-  - [2.2. Tecnologias e Padrões Arquiteturais](#22-tecnologias-e-padrões-arquiteturais)
-- [3. Como Executar o Ecossistema Localmente](#3-como-executar-o-ecossistema-localmente)
-  - [3.1. Pré-requisitos](#31-pré-requisitos)
-  - [3.2. Execução Unificada via Docker Compose (Recomendado)](#32-execução-unificada-via-docker-compose-recomendado)
-  - [3.3. Execução Individual da UsersAPI (.NET CLI)](#33-execução-individual-da-usersapi-net-cli)
-- [4. Testes Unitários](#4-testes-unitários)
-- [5. Documentação Interativa da API (Scalar / OpenAPI)](#5-documentação-interativa-da-api-scalar--openapi)
-- [6. Documentação Técnica Detalhada (`/docs`)](#6-documentação-técnica-detalhada-docs)
+- [1. O Microsserviço UsersAPI](#1-o-microsserviço-usersapi)
+  - [1.1. Responsabilidades de Negócio](#11-responsabilidades-de-negócio)
+  - [1.2. Papéis de Acesso (RBAC)](#12-papéis-de-acesso-rbac)
+  - [1.3. Diagrama de Integração](#13-diagrama-de-integração)
+- [2. Tecnologias & Decisões Arquiteturais](#2-tecnologias--decisões-arquiteturais)
+- [3. Como Executar a UsersAPI](#3-como-executar-a-usersapi)
+  - [3.1. Execução Integrada via Docker Compose (Recomendado)](#31-execução-integrada-via-docker-compose-recomendado)
+  - [3.2. Execução Individual (.NET CLI & Docker Local)](#32-execução-individual-net-cli--docker-local)
+- [4. Endpoints HTTP & Documentação Interativa (Scalar)](#4-endpoints-http--documentação-interativa-scalar)
+- [5. Mensageria Assíncrona & Eventos Publicados](#5-mensageria-assíncrona--eventos-publicados)
+- [6. Testes Unitários](#6-testes-unitários)
+- [7. Documentação Técnica Detalhada (`/docs`)](#7-documentação-técnica-detalhada-docs)
 
 ---
 
-## 1. Visão Geral da Fase 02
+## 1. O Microsserviço UsersAPI
 
-A Fase 02 do projeto **FIAP Cloud Games** é orientada a microsserviços desacoplados e distribuídos com **Database-per-Service** e comunicação assíncrona orientada a eventos (**Event-Driven Architecture - EDA**) através do **RabbitMQ**.
+A **UsersAPI** é o serviço responsável pelo gerenciamento de identidade, autenticação e autorização centralizada de todo o ecossistema **FIAP Cloud Games**.
 
-### 1.1. Os 5 Repositórios do Ecossistema
+### 1.1. Responsabilidades de Negócio
+- **Cadastro de Usuários:** Criação de contas de jogadores e administradores com validação de formato de e-mail e hash criptográfico adaptativo com BCrypt.
+- **Autenticação & Emissão de Tokens JWT:** Emissão de tokens JWT Bearer assinados, contendo claims de identidade (`NameIdentifier`, `Name`, `Email`, `Role`).
+- **Validação de Credenciais:** Endpoint seguro de consulta do próprio perfil do usuário autenticado (`GET /api/v1/users/me`).
+- **Publicação de Eventos Transacionais:** Emissão do evento assíncrono `UserCreatedEvent` na exchange do RabbitMQ para que o microsserviço de notificações envie o e-mail de boas-vindas.
 
-O ecossistema é composto por **5 repositórios Git independentes**:
+### 1.2. Papéis de Acesso (RBAC)
+O microsserviço implementa controle de acesso baseado em funções (*Role-Based Access Control*):
+- **`Anonymous`:** Visitante da plataforma sem credenciais ativas.
+- **`Gamer`:** Jogador autenticado com permissão para gerenciar sua biblioteca e comprar jogos na `CatalogAPI`.
+- **`Admin`:** Administrador com privilégios de gestão de catálogo e governança.
 
-| Repositório | Descrição | Link do Repositório |
-|---|---|---|
-| **`fcg-fase-02--users`** | **UsersAPI (Este repositório):** Microsserviço de gestão de identidade, usuários, emissão de tokens JWT e controle de papéis (`Anonymous`, `Gamer`, `Admin`). | [github.com/idgrego/fcg-fase-02--users](https://github.com/idgrego/fcg-fase-02--users) |
-| **`fcg-fase-02--catalog`** | **CatalogAPI:** Gestão do catálogo de jogos, biblioteca do jogador, controle de compras e consumo de confirmações de pagamento. | [github.com/idgrego/fcg-fase-02--catalog](https://github.com/idgrego/fcg-fase-02--catalog) |
-| **`fcg-fase-02--payments`** | **PaymentsAPI:** Simulador de gateway financeiro de pagamentos, validação de transações e emissão de eventos de resultado. | [github.com/idgrego/fcg-fase-02--payments](https://github.com/idgrego/fcg-fase-02--payments) |
-| **`fcg-fase-02--notifications`** | **NotificationsAPI:** Central assíncrona de envio de e-mails transacionais (boas-vindas, confirmação de compra e falhas). | [github.com/idgrego/fcg-fase-02--notifications](https://github.com/idgrego/fcg-fase-02--notifications) |
-| **`fcg-fase-02--orchestration`** | **Orquestração Local:** Docker Compose unificado com toda a infraestrutura (PostgreSQL, RabbitMQ) e integração dos microsserviços. | [github.com/idgrego/fcg-fase-02--orchestration](https://github.com/idgrego/fcg-fase-02--orchestration) |
-
-### 1.2. Topologia de Pastas Recomendada
-
-Para que os scripts de orquestração local (`docker-compose.yml`), caminhos relativos de build e redes funcionem de forma automática, **todos os 5 repositórios devem ser clonados lado a lado no mesmo diretório pai**:
-
-```text
-meu-diretorio-de-projetos/
-├── fcg-fase-02--users/             # Repositório da UsersAPI
-├── fcg-fase-02--catalog/           # Repositório da CatalogAPI
-├── fcg-fase-02--payments/          # Repositório da PaymentsAPI
-├── fcg-fase-02--notifications/     # Repositório da NotificationsAPI
-└── fcg-fase-02--orchestration/     # Repositório de Orquestração (docker-compose)
-```
-
-```powershell
-# Comandos para clonar os 5 repositórios:
-git clone https://github.com/idgrego/fcg-fase-02--users.git
-git clone https://github.com/idgrego/fcg-fase-02--catalog.git
-git clone https://github.com/idgrego/fcg-fase-02--payments.git
-git clone https://github.com/idgrego/fcg-fase-02--notifications.git
-git clone https://github.com/idgrego/fcg-fase-02--orchestration.git
-```
-
----
-
-## 2. O Microsserviço UsersAPI
-
-A **UsersAPI** gerencia o cadastro e a identidade dos usuários da plataforma:
+### 1.3. Diagrama de Integração
 
 ```mermaid
-graph TD
-    Client["Cliente / Jogador / Frontend"] -->|HTTP REST| API["UsersAPI (:8080)"]
-    API -->|Persistência| DB[("usersdb<br/>(PostgreSQL 17 :5432)")]
-    API -->|Publica UserCreatedEvent| Rabbit["RabbitMQ Broker<br/>(Exchange: fcg.users.events)"]
-    Rabbit -->|user.created| Notif["NotificationsAPI<br/>(E-mail de Boas-Vindas)"]
+graph LR
+    Client["👤 Jogador / Frontend / Scalar"] -->|"1. POST /auth/register ou /auth/login"| UsersAPI["👤 UsersAPI (:8080)<br/><i>Container: fcg-ms-users-api</i>"]
+    
+    UsersAPI -->|"2. Persistência Relacional"| DB[("🐘 PostgreSQL 17<br/>Database: usersdb (:5432)<br/><i>Container: fcg-db-postgres-users</i>")]
+    
+    UsersAPI -.->|"3. Publica UserCreatedEvent<br/>Exchange: fcg.users.events<br/>Key: user.created"| Broker[("🐇 RabbitMQ Broker (:5672)<br/><i>Container: fcg-rabbitmq</i>")]
+    
+    Broker -.->|"4. Fila: notifications.user-created"| Notif["🔔 NotificationsAPI (:8081)<br/><i>Disparo de E-mail</i>"]
 ```
 
-### 2.1. Responsabilidades e Funcionalidades
-- **Cadastro de Usuários:** Criação de conta com sanitização de dados, validação de e-mail e hash adaptativo com BCrypt.
-- **Autenticação & Tokens JWT:** Emissão e validação de tokens JWT Bearer contendo claims (`NameIdentifier`, `Name`, `Email`, `Role`).
-- **Controle de Acesso (RBAC):** Suporte aos perfis `Anonymous`, `Gamer` e `Admin`.
-- **Publicação de Eventos Assíncronos:** Emissão do evento `UserCreatedEvent` na Topic Exchange `fcg.users.events` para notificar outros microsserviços sem travamento HTTP.
+---
 
-### 2.2. Tecnologias e Padrões Arquiteturais
-- **Runtime:** .NET 10 (`net10.0`), C# 14.
-- **Solução Moderna:** Formato `.slnx` suportado pelo .NET CLI.
-- **Clean Architecture:** Separação estrita em 4 camadas (`Domain`, `Application`, `Infrastructure`, `API`).
-- **Domain-Driven Design (DDD):** Entidades ricas com construtores protegidos, invariantes e Value Object `Email` com Regex compilada em build time (`[GeneratedRegex]`).
-- **Minimal APIs Modulares:** Agrupamento de rotas com `MapGroup` e métodos de extensão, sem poluição do `Program.cs` e alta performance de cold-start.
-- **Persistência Relacional:** Entity Framework Core com provedor PostgreSQL (`Npgsql`), mapeamento via Fluent API e Value Converter para Value Objects.
-- **Documentação:** **Scalar** (`Scalar.AspNetCore`) sobre especificação nativa OpenAPI.
-- **Segurança:** Autenticação stateless com JWT Bearer e criptografia de senhas com `BCrypt.Net-Next`.
+## 2. Tecnologias & Decisões Arquiteturais
+
+- **Runtime & Plataforma:** .NET 10 (`net10.0`), C# 14, Solution moderna no formato `.slnx`.
+- **Clean Architecture:** Separação estrita em 4 camadas desacopladas:
+  - `FCG02.UsersAPI.Domain`: Entidades de negócio ricas, enums, contratos de repositório e Value Object `Email` com Expressão Regular pré-compilada (`RegexOptions.Compiled`).
+  - `FCG02.UsersAPI.Application`: Casos de uso (`UserService`, `AuthService`, `JwtTokenService`), DTOs e validações.
+  - `FCG02.UsersAPI.Infrastructure`: Provedor relacional PostgreSQL via Entity Framework Core (`Npgsql.EntityFrameworkCore.PostgreSQL`), mapeamento via Fluent API, migrações e mensageria RabbitMQ 7.x.
+  - `FCG02.UsersAPI.API`: Endpoints HTTP construídos com **Minimal APIs modulares**, OpenAPI nativo e documentação interativa com Scalar.
+- **Segurança:** Hashing de senhas com algoritmo BCrypt com salt dinâmico (`BCrypt.Net-Next`) e tokens stateless HMAC-SHA256.
+- **Containerização Segura:** Dockerfile Multi-stage com execução não-root nativa do .NET 10 (`USER app`).
 
 ---
 
-## 3. Como Executar o Ecossistema Localmente
+## 3. Como Executar a UsersAPI
 
-### 3.1. Pré-requisitos
-- [.NET 10 SDK](https://dotnet.microsoft.com/) ou superior instalado.
-- [Docker Desktop](https://www.docker.com/products/docker-desktop/) ou Docker Engine instalado e em execução.
-- Git instalado.
+### 3.1. Execução Integrada via Docker Compose (Recomendado)
 
----
+A forma recomendada de executar a UsersAPI é através da orquestração unificada, que sobe todo o ecossistema com um único comando:
 
-### 3.2. Execução Unificada via Docker Compose (Recomendado)
-
-A forma mais simples e robusta de subir todo o ambiente de desenvolvimento é utilizando a orquestração centralizada:
-
-1. Abra o terminal na pasta **`fcg-fase-02--orchestration`**:
+1. Navegue até a pasta de orquestração:
    ```powershell
-   cd fcg-fase-02--orchestration
+   cd ../fcg-fase-02--orchestration
    ```
 
-2. Execute o comando para subir toda a infraestrutura e os microsserviços:
+2. Inicialize todos os contêineres:
    ```powershell
    docker compose up -d --build
    ```
 
-3. **O que este comando inicializa:**
-   - Container **PostgreSQL 17** (`fcg-postgres-users`) na porta `5432` com volume persistente.
-   - Container **RabbitMQ 3 Management** (`fcg-rabbitmq`) na porta `5672` (AMQP) e `15672` (Web UI).
-   - Container **UsersAPI** (`fcg-users-api`) na porta `8080`, aguardando os healthchecks do banco e broker passarem com sucesso.
-   - Container **NotificationsAPI** (`fcg-notifications-api`) na porta `8081`.
-
-4. **Verificar os serviços em execução:**
+3. Verifique o status dos serviços:
    ```powershell
    docker compose ps
    ```
 
-5. **Acompanhar os logs:**
+4. Acompanhe os logs da UsersAPI:
    ```powershell
    docker compose logs -f users-api
    ```
 
-6. **Derrubar os serviços mantendo os dados persistidos:**
-   ```powershell
-   docker compose down
-   ```
-
 ---
 
-### 3.3. Execução Individual da UsersAPI (.NET CLI)
+### 3.2. Execução Individual (.NET CLI & Docker Local)
 
-Caso deseje executar a **UsersAPI** diretamente via `.NET CLI` para fins de depuração ou desenvolvimento rápido:
+Caso queira executar a **UsersAPI** diretamente via `.NET CLI` para depuração ou desenvolvimento:
 
-1. **Subir apenas a infraestrutura necessária (PostgreSQL e RabbitMQ):**
+1. **Subir os contêineres de infraestrutura (PostgreSQL e RabbitMQ):**
    ```powershell
-   # PostgreSQL
-   docker run --name pg-users -e POSTGRES_USER=postgres -e POSTGRES_PASSWORD=postgres -e POSTGRES_DB=usersdb -p 5432:5432 -d postgres:17-alpine
+   # PostgreSQL para Users
+   docker run -d --name pg-users -e POSTGRES_USER=postgres -e POSTGRES_PASSWORD=postgres -e POSTGRES_DB=usersdb -p 5432:5432 postgres:17-alpine
 
    # RabbitMQ com Management UI
-   docker run --name fcg-rabbitmq -e RABBITMQ_DEFAULT_USER=guest -e RABBITMQ_DEFAULT_PASS=guest -p 5672:5672 -p 15672:15672 -d rabbitmq:3-management
+   docker run -d --name rabbitmq -e RABBITMQ_DEFAULT_USER=guest -e RABBITMQ_DEFAULT_PASS=guest -p 5672:5672 -p 15672:15672 rabbitmq:3-management
    ```
 
-2. **Aplicar as migrações do banco de dados:**
+2. **Aplicar as migrações no banco de dados:**
    Na pasta `fcg-fase-02--users`:
    ```powershell
    dotnet ef database update --project src/FCG02.UsersAPI.Infrastructure --startup-project src/FCG02.UsersAPI.API
    ```
 
-3. **Compilar e executar a UsersAPI:**
+3. **Executar a API via .NET CLI:**
    ```powershell
    dotnet run --project src/FCG02.UsersAPI.API
    ```
 
-A API estará disponível em `http://localhost:5000` (ou na porta HTTP/HTTPS exibida no terminal).
+A API estará acessível em `http://localhost:5000` (ou na porta HTTP informada no terminal).
 
 ---
 
-## 4. Testes Unitários
+## 4. Endpoints HTTP & Documentação Interativa (Scalar)
 
-A **UsersAPI** possui cobertura abrangente de testes unitários desenvolvidos com **xUnit** e **Moq**, seguindo o padrão AAA (*Arrange, Act, Assert*):
-- **Testes de Domínio:** Invariantes da entidade `User`, normalização e validações do Value Object `Email` (testes parametrizados com `[Theory]` e `[Fact]`).
-- **Testes de Aplicação:** Casos de uso `UserService` e `AuthService` com isolamento completo de dependências externas via mocks.
+Com o serviço em execução, acesse a interface interativa do **Scalar**:
+
+👉 **URL do Scalar:** `http://localhost:8080/scalar/v1` (no Docker) ou `http://localhost:PORTA/scalar/v1` (local).
+
+### Principais Endpoints:
+
+| Método | Rota | Descrição | Autenticação |
+|---|---|---|---|
+| `POST` | `/api/v1/auth/register` | Cria uma nova conta e publica o evento `UserCreatedEvent` | Pública |
+| `POST` | `/api/v1/auth/login` | Autentica com e-mail/senha e emite o Bearer Token JWT | Pública |
+| `GET` | `/api/v1/users/me` | Retorna o perfil completo do usuário logado | Bearer JWT |
+| `GET` | `/health` | Endpoint de verificação de integridade do serviço | Pública |
+
+---
+
+## 5. Mensageria Assíncrona & Eventos Publicados
+
+Ao cadastrar um novo usuário (`POST /api/v1/auth/register`), a **UsersAPI** publica o evento **`UserCreatedEvent`**:
+
+- **Exchange:** `fcg.users.events` (Tipo: `Topic`, `durable: true`)
+- **Routing Key:** `user.created`
+- **Fila Destino:** `notifications.user-created` (consumida pela `NotificationsAPI`)
+
+### Payload Publicado (`UserCreatedEvent`):
+```json
+{
+  "eventId": "a1b2c3d4-e5f6-7a8b-9c0d-1e2f3a4b5c6d",
+  "occurredOn": "2026-10-29T10:00:00Z",
+  "userId": "550e8400-e29b-41d4-a716-446655440000",
+  "name": "Bruce Wayne",
+  "email": "bruce.wayne@waynecorp.com",
+  "role": "Gamer",
+  "createdAt": "2026-10-29T10:00:00Z"
+}
+```
+
+---
+
+## 6. Testes Unitários
+
+A **UsersAPI** possui suíte completa de testes unitários desenvolvida com **xUnit**, **Moq** e **FluentAssertions**, cobrindo regras de domínio e fluxos de aplicação:
+
+- **Domínio:** Invariantes de entidade, mutações protegidas e validações exaustivas do Value Object `Email` (testes parametrizados com `[Theory]` e `[InlineData]`).
+- **Aplicação:** Casos de uso `UserService` e `AuthService` com isolamento completo de persistência e tokenização via mocks.
 
 Para executar todos os testes da solução:
 
@@ -187,28 +189,15 @@ dotnet test tests/FCG02.UsersAPI.UnitTests/FCG02.UsersAPI.UnitTests.csproj --log
 
 ---
 
-## 5. Documentação Interativa da API (Scalar / OpenAPI)
+## 7. Documentação Técnica Detalhada (`/docs`)
 
-Com a API em execução, acesse a documentação interativa via navegador:
+Para um aprofundamento específico em cada camada arquitetural da UsersAPI, consulte os documentos na pasta [`/docs`](docs/index.md):
 
-👉 **URL do Scalar:** `http://localhost:8080/scalar/v1` (no Docker) ou `http://localhost:PORTA/scalar/v1` (via `dotnet run`).
-
-### Principais Endpoints:
-- `POST /api/v1/auth/register`: Registra um novo usuário e publica o evento `UserCreatedEvent`.
-- `POST /api/v1/auth/login`: Autentica o usuário e emite o Bearer Token JWT.
-- `GET /api/v1/users/me`: Retorna o perfil do usuário autenticado (requer cabeçalho `Authorization: Bearer <token>`).
-
----
-
-## 6. Documentação Técnica Detalhada (`/docs`)
-
-Para entender em profundidade o código, as decisões arquiteturais e as implementações de cada camada, consulte os documentos na pasta [`/docs`](docs/index.md):
-
-- **[Índice da Documentação Técnica](docs/index.md)**
-- **[Arquitetura e Decisões de Design](docs/architecture.md)**
-- **[Camada de Domínio & DDD](docs/domain.md)**
-- **[Camada de Aplicação, DTOs e Casos de Uso](docs/application.md)**
-- **[Camada de Infraestrutura, EF Core e RabbitMQ](docs/infrastructure.md)**
-- **[Camada de Apresentação, Minimal APIs e JWT](docs/api.md)**
-- **[Suíte de Testes Unitários](docs/tests.md)**
-- **[Containerização e Docker Multi-stage](docs/docker.md)**
+- **[📑 Índice da Documentação Técnica da UsersAPI](docs/index.md)**
+- **[🏛️ Arquitetura e Decisões de Design](docs/architecture.md)**
+- **[🧩 Camada de Domínio & DDD](docs/domain.md)**
+- **[⚙️ Camada de Aplicação, DTOs e Casos de Uso](docs/application.md)**
+- **[🐘 Camada de Infraestrutura, EF Core e RabbitMQ](docs/infrastructure.md)**
+- **[🚀 Camada de Apresentação, Minimal APIs e JWT](docs/api.md)**
+- **[🧪 Suíte de Testes Unitários](docs/tests.md)**
+- **[🐳 Containerização e Docker Multi-stage](docs/docker.md)**
