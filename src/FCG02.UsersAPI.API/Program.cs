@@ -124,4 +124,11 @@ app.UseAuthorization();
 app.MapAuthEndpoints();
 app.MapUserEndpoints();
 
+app.MapGet("/health", () => Results.Ok(new
+{
+    status = "Health",
+    service = "UsersAPI",
+    timestamp = DateTime.UtcNow
+})).AllowAnonymous();
+
 app.Run();
