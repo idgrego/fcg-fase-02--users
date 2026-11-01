@@ -67,7 +67,7 @@ Detalhamento da orquestração dos casos de uso:
 
 ### 4. [🔌 Camada de Infraestrutura (`infrastructure.md`)](infrastructure.md)
 Detalhamento da persistência e comunicação externa:
-- Configuração do Entity Framework Core com `Npgsql` (PostgreSQL 17).
+- Configuração do Entity Framework Core com provedor SQL Server (`Microsoft.EntityFrameworkCore.SqlServer`) para o Azure Database (`fcg-02-usersdb`).
 - Mapeamento objeto-relacional via Fluent API (`IEntityTypeConfiguration<User>`) e conversor de valor para o Value Object `Email`.
 - Hashing adaptativo com `BCrypt.Net-Next`.
 - Emissão de tokens JWT com assinatura HMAC-SHA256 (`TokenService`).

@@ -10,7 +10,7 @@ O **UsersAPI** é o microsserviço responsável pela gestão de identidade, cont
 - [2. Padrão Arquitetural: Clean Architecture (.NET 10+)](#2-padrão-arquitetural-clean-architecture-net-10)
   - [2.1. Regra de Dependência](#21-regra-de-dependência)
   - [2.2. Decisão Arquitetural: Minimal APIs vs Controllers](#22-decisão-arquitetural-minimal-apis-vs-controllers)
-- [3. Banco de Dados: PostgreSQL](#3-banco-de-dados-postgresql)
+- [3. Banco de Dados: Azure Database](#3-banco-de-dados-azure-database)
   - [3.1. Esquema Conceitual de Dados](#31-esquema-conceitual-de-dados)
 - [4. Integração de Eventos (RabbitMQ)](#4-integração-de-eventos-rabbitmq)
 
@@ -48,7 +48,7 @@ fcg-fase-02--users/
 ├── src/
 │   ├── FCG02.UsersAPI.Domain/          # Núcleo: Entidades, Value Objects, Enums e Interfaces de Repositório
 │   ├── FCG02.UsersAPI.Application/     # Casos de uso: DTOs, Services/Use Cases, Interfaces (Token, Eventos)
-│   ├── FCG02.UsersAPI.Infrastructure/  # PostgreSQL (EF Core), BCrypt, RabbitMQ Publisher
+│   ├── FCG02.UsersAPI.Infrastructure/  # Azure Database (EF Core SQL Server), BCrypt, RabbitMQ Publisher
 │   └── FCG02.UsersAPI.API/             # Minimal APIs (Route Groups), Middlewares, Scalar (OpenAPI) e Program.cs
 └── tests/
     └── FCG02.UsersAPI.UnitTests/       # Testes unitários de Domínio e Casos de Uso
@@ -67,7 +67,7 @@ graph TD
     end
 
     subgraph Infra ["Camada de Infraestrutura"]
-        InfraProj["FCG02.UsersAPI.Infrastructure<br/>(EF Core / PostgreSQL / RabbitMQ / BCrypt)"]
+        InfraProj["FCG02.UsersAPI.Infrastructure<br/>(EF Core / Azure Database / RabbitMQ / BCrypt)"]
     end
 
     subgraph Dominio ["Núcleo do Negócio"]
@@ -99,28 +99,31 @@ graph TD
 
 ---
 
-## 3. Banco de Dados: PostgreSQL
+## 3. Banco de Dados: Azure Database
 
-- **ORM:** Entity Framework Core (`Npgsql.EntityFrameworkCore.PostgreSQL`).
+- **SGBD:** **Azure Database** (Azure SQL Database na nuvem, servidor `fcg-server.database.windows.net`, porta `1433`).
+- **Banco Dedicado:** `fcg-02-usersdb` (*Database-per-Service*).
+- **ORM:** Entity Framework Core (`Microsoft.EntityFrameworkCore.SqlServer`).
+- **Resiliência:** Conexão criptografada TLS/SSL com tolerância a falhas transitórias ativada via `sqlOptions.EnableRetryOnFailure()`.
 - **Mapeamento:** Fluent API (`IEntityTypeConfiguration<T>`) na camada de `Infrastructure`, mantendo o `Domain` livre de anotações de dados de banco.
-- **Migrações:** Gerenciadas via EF Core Migrations.
+- **Migrações:** Gerenciadas via EF Core Migrations (`InitialAzureCreate`).
 
 ### 3.1. Esquema Conceitual de Dados
 
 Tabela: `Users`
-- `Id` (UUID/Guid, PK)
-- `Name` (VARCHAR(150), NOT NULL)
-- `Email` (VARCHAR(200), NOT NULL, UNIQUE INDEX)
-- `PasswordHash` (VARCHAR(255), NOT NULL)
-- `Role` (VARCHAR(20) ou INT, NOT NULL - `anonymous`, `gamer`, `admin`)
-- `CreatedAt` (TIMESTAMPTZ, NOT NULL)
-- `UpdatedAt` (TIMESTAMPTZ, NULL)
+- `Id` (UNIQUEIDENTIFIER/Guid, PK)
+- `Name` (NVARCHAR(150), NOT NULL)
+- `Email` (NVARCHAR(200), NOT NULL, UNIQUE INDEX)
+- `PasswordHash` (NVARCHAR(255), NOT NULL)
+- `Role` (NVARCHAR(20) ou INT, NOT NULL - `anonymous`, `gamer`, `admin`)
+- `CreatedAt` (DATETIME2, NOT NULL)
+- `UpdatedAt` (DATETIME2, NULL)
 
 ---
 
 ## 4. Integração de Eventos (RabbitMQ)
 
-Ao persistir um novo usuário com sucesso no PostgreSQL:
+Ao persistir um novo usuário com sucesso no Azure Database:
 1. A camada de aplicação invoca o `IEventPublisher`.
 2. O evento `UserCreatedEvent` é publicado na exchange do RabbitMQ (`users.events` ou `amq.topic`).
 3. Payload do evento:

@@ -126,9 +126,9 @@ A diretiva **`USER app`** instrui o container a rodar sob o usuário de baixa pe
 # 1. Construir a imagem Docker
 docker build -t fcg02-users-api:latest .
 
-# 2. Executar o container apontando para o PostgreSQL e RabbitMQ da máquina host
+# 2. Executar o container apontando para o Azure Database e RabbitMQ da máquina host
 docker run -d --name users-api -p 8080:8080 `
-  -e ConnectionStrings__DefaultConnection="Host=host.docker.internal;Port=5432;Database=usersdb;User Id=postgres;Password=postgres;" `
+  -e ConnectionStrings__DefaultConnection="Server=tcp:fcg-server.database.windows.net,1433;Initial Catalog=fcg-02-usersdb;User ID=fcg-sa;Password=f1@p-cluod-gam3s;Encrypt=True;TrustServerCertificate=True;MultipleActiveResultSets=True;" `
   -e RabbitMQ__HostName="host.docker.internal" `
   fcg02-users-api:latest
 ```

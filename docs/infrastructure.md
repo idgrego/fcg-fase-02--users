@@ -1,13 +1,13 @@
 # UsersAPI - Documentação Técnica: Camada de Infraestrutura
 
-A camada **`FCG02.UsersAPI.Infrastructure`** implementa os detalhes tecnológicos e mecanismos de entrada/saída do microsserviço: persistência relacional com Entity Framework Core e PostgreSQL 17, criptografia de senhas, emissão de tokens JWT e publicação de eventos assíncronos no RabbitMQ.
+A camada **`FCG02.UsersAPI.Infrastructure`** implementa os detalhes tecnológicos e mecanismos de entrada/saída do microsserviço: persistência relacional com Entity Framework Core e Azure Database, criptografia de senhas, emissão de tokens JWT e publicação de eventos assíncronos no RabbitMQ.
 
 ---
 
 ## 📑 Sumário
 
 - [1. Visão Geral da Camada](#1-visão-geral-da-camada)
-- [2. Banco de Dados & Modelo Físico (PostgreSQL)](#2-banco-de-dados--modelo-físico-postgresql)
+- [2. Banco de Dados & Modelo Físico (Azure Database)](#2-banco-de-dados--modelo-físico-azure-database)
 - [3. Entity Framework Core & Fluent API](#3-entity-framework-core--fluent-api)
   - [3.1. `UserConfiguration`: Mapeamento e Value Converter](#31-userconfiguration-mapeamento-e-value-converter)
   - [3.2. `UsersDbContext` e Descoberta Automática](#32-usersdbcontext-e-descoberta-automática)
@@ -28,7 +28,7 @@ A camada **`FCG02.UsersAPI.Infrastructure`** implementa os detalhes tecnológico
 ```mermaid
 graph TD
     subgraph Infraestrutura ["FCG02.UsersAPI.Infrastructure"]
-        Context["UsersDbContext<br/>(Npgsql / EF Core)"]
+        Context["UserDbContext<br/>(SqlServer / EF Core)"]
         Repo["UserRepository<br/>(IUserRepository)"]
         Hasher["PasswordHasher<br/>(BCrypt.Net)"]
         Token["TokenService<br/>(System.IdentityModel)"]
@@ -36,26 +36,26 @@ graph TD
     end
 
     Repo --> Context
-    Context --> DB[("PostgreSQL 17<br/>(Tabela: users)")]
+    Context --> DB[("☁️ Azure Database<br/>(Banco: fcg-02-usersdb)")]
     Publisher --> Broker["RabbitMQ Broker<br/>(Exchange: fcg.users.events)"]
 ```
 
 ---
 
-## 2. Banco de Dados & Modelo Físico (PostgreSQL)
+## 2. Banco de Dados & Modelo Físico (Azure Database)
 
-O banco de dados relacional oficial é o **PostgreSQL 17**. O schema físico é mantido em sincronia com o modelo C# através das migrações do EF Core:
+O banco de dados relacional oficial é o **Azure Database** (servidor `fcg-server.database.windows.net`, banco `fcg-02-usersdb`, porta `1433`). O schema físico é mantido em sincronia com o modelo C# através das migrações do EF Core:
 
 ```mermaid
 erDiagram
     users {
-        uuid id PK "Identificador único (UUID v4)"
-        varchar_150 name "Nome completo do usuário"
-        varchar_256 email UK "Endereço de e-mail único"
-        varchar_255 password_hash "Hash criptográfico BCrypt"
-        varchar_50 role "Papel no sistema (Anonymous, Gamer, Admin)"
-        timestamp created_at "Data/hora de criação (UTC)"
-        timestamp updated_at "Data/hora da última alteração (UTC, opcional)"
+        uniqueidentifier id PK "Identificador único (UUID/Guid)"
+        nvarchar_150 name "Nome completo do usuário"
+        nvarchar_256 email UK "Endereço de e-mail único"
+        nvarchar_255 password_hash "Hash criptográfico BCrypt"
+        nvarchar_50 role "Papel no sistema (Anonymous, Gamer, Admin)"
+        datetime2 created_at "Data/hora de criação (UTC)"
+        datetime2 updated_at "Data/hora da última alteração (UTC, opcional)"
     }
 ```
 
@@ -420,8 +420,8 @@ public static class DependencyInjection
         var connectionString = configuration.GetConnectionString("DefaultConnection")
             ?? throw new InvalidOperationException("Connection string 'DefaultConnection' not found.");
 
-        services.AddDbContext<UsersDbContext>(options =>
-            options.UseNpgsql(connectionString));
+        services.AddDbContext<UserDbContext>(options =>
+            options.UseSqlServer(connectionString, sqlOptions => sqlOptions.EnableRetryOnFailure()));
 
         services.AddScoped<IUserRepository, UserRepository>();
         services.AddSingleton<IPasswordHasher, PasswordHasher>();

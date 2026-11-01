@@ -76,7 +76,7 @@ O ecossistema utiliza a convenção do ASP.NET Core onde as seções aninhadas d
 - `Jwt__ExpirationInSeconds`: `"7200"`
 
 ### 3.2. `Secret` (Credenciais em Base64)
-- `ConnectionStrings__DefaultConnection`: String de conexão com o PostgreSQL em Base64.
+- `ConnectionStrings__DefaultConnection`: String de conexão com o Azure Database (banco `fcg-02-usersdb`) em Base64.
 - `RabbitMQ__Password`: Senha do usuário do broker em Base64.
 - `Jwt__SecretKey`: Chave simétrica HMAC-SHA256 em Base64.
 
@@ -146,4 +146,3 @@ kubectl port-forward svc/users-api-service 8080:80
 
 - ⬅️ **[Voltar para a Containerização Docker (`docker.md`)](docker.md)**
 - 📑 **[Voltar para o Índice da Documentação (`index.md`)](index.md)**
-- 📚 **[Ver a Aula de Tutorial Passo a Passo (Aula 12)](../../tutor/users/12-orquestracao-kubernetes.md)**

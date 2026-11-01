@@ -73,7 +73,7 @@ public static class AuthEndpoints
         })
         .WithName("RegisterUser")
         .WithSummary("Registrar novo usuário")
-        .WithDescription("Cadastra um novo usuário no banco PostgreSQL e publica o evento UserCreatedEvent no RabbitMQ.")
+        .WithDescription("Cadastra um novo usuário no Azure Database e publica o evento UserCreatedEvent no RabbitMQ.")
         .Produces<UserResponse>(StatusCodes.Status201Created)
         .Produces(StatusCodes.Status400BadRequest)
         .Produces(StatusCodes.Status409Conflict);

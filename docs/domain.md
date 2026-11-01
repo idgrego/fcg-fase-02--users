@@ -254,7 +254,7 @@ public enum UserRole
 
 Localização: `src/FCG02.UsersAPI.Domain/Interfaces/IUserRepository.cs`
 
-Em conformidade com o **Princípio da Inversão de Dependência (D do SOLID)**, o Domínio declara o contrato de persistência que necessita, mas não possui qualquer conhecimento sobre como ou onde esses dados serão gravados (PostgreSQL, SQL Server, Memória):
+Em conformidade com o **Princípio da Inversão de Dependência (D do SOLID)**, o Domínio declara o contrato de persistência que necessita, mas não possui qualquer conhecimento sobre como ou onde esses dados serão gravados (Azure Database, SQL Server, Memória):
 
 ```csharp
 using FCG02.UsersAPI.Domain.Entities;

@@ -1,7 +1,7 @@
 # FIAP Cloud Games - Fase 02 - Microsserviço UsersAPI (`fcg-fase-02--users`)
 
 [![.NET 10](https://img.shields.io/badge/.NET-10.0-purple.svg)](https://dotnet.microsoft.com/)
-[![PostgreSQL](https://img.shields.io/badge/PostgreSQL-17-blue.svg)](https://www.postgresql.org/)
+[![Azure Database](https://img.shields.io/badge/Azure_Database-SQL-0089D6.svg)](https://azure.microsoft.com/)
 [![RabbitMQ](https://img.shields.io/badge/RabbitMQ-3.13-orange.svg)](https://www.rabbitmq.com/)
 [![Docker](https://img.shields.io/badge/Docker-Ready-2496ED.svg)](https://www.docker.com/)
 
@@ -56,7 +56,7 @@ O microsserviço implementa controle de acesso baseado em funções (*Role-Based
 graph LR
     Client["👤 Jogador / Frontend / Scalar"] -->|"1. POST /auth/register ou /auth/login"| UsersAPI["👤 UsersAPI (:8080)<br/><i>Container: fcg-ms-users-api</i>"]
     
-    UsersAPI -->|"2. Persistência Relacional"| DB[("🐘 PostgreSQL 17<br/>Database: usersdb (:5432)<br/><i>Container: fcg-db-postgres-users</i>")]
+    UsersAPI -->|"2. Persistência Relacional"| DB[("☁️ Azure Database<br/>Database: fcg-02-usersdb (:1433)<br/><i>Server: fcg-server.database.windows.net</i>")]
     
     UsersAPI -.->|"3. Publica UserCreatedEvent<br/>Exchange: fcg.users.events<br/>Key: user.created"| Broker[("🐇 RabbitMQ Broker (:5672)<br/><i>Container: fcg-rabbitmq</i>")]
     
@@ -71,7 +71,7 @@ graph LR
 - **Clean Architecture:** Separação estrita em 4 camadas desacopladas:
   - `FCG02.UsersAPI.Domain`: Entidades de negócio ricas, enums, contratos de repositório e Value Object `Email` com Expressão Regular pré-compilada (`RegexOptions.Compiled`).
   - `FCG02.UsersAPI.Application`: Casos de uso (`UserService`, `AuthService`, `JwtTokenService`), DTOs e validações.
-  - `FCG02.UsersAPI.Infrastructure`: Provedor relacional PostgreSQL via Entity Framework Core (`Npgsql.EntityFrameworkCore.PostgreSQL`), mapeamento via Fluent API, migrações e mensageria RabbitMQ 7.x.
+  - `FCG02.UsersAPI.Infrastructure`: Provedor relacional Azure Database via Entity Framework Core (`Microsoft.EntityFrameworkCore.SqlServer`), mapeamento via Fluent API, migrações e mensageria RabbitMQ 7.x.
   - `FCG02.UsersAPI.API`: Endpoints HTTP construídos com **Minimal APIs modulares**, OpenAPI nativo e documentação interativa com Scalar.
 - **Segurança:** Hashing de senhas com algoritmo BCrypt com salt dinâmico (`BCrypt.Net-Next`) e tokens stateless HMAC-SHA256.
 - **Containerização Segura:** Dockerfile Multi-stage com execução não-root nativa do .NET 10 (`USER app`).
@@ -110,16 +110,13 @@ A forma recomendada de executar a UsersAPI é através da orquestração unifica
 
 Caso queira executar a **UsersAPI** diretamente via `.NET CLI` para depuração ou desenvolvimento:
 
-1. **Subir os contêineres de infraestrutura (PostgreSQL e RabbitMQ):**
+1. **Subir o broker RabbitMQ (o banco de dados é hospedado no Azure Database):**
    ```powershell
-   # PostgreSQL para Users
-   docker run -d --name pg-users -e POSTGRES_USER=postgres -e POSTGRES_PASSWORD=postgres -e POSTGRES_DB=usersdb -p 5432:5432 postgres:17-alpine
-
    # RabbitMQ com Management UI
    docker run -d --name rabbitmq -e RABBITMQ_DEFAULT_USER=guest -e RABBITMQ_DEFAULT_PASS=guest -p 5672:5672 -p 15672:15672 rabbitmq:3-management
    ```
 
-2. **Aplicar as migrações no banco de dados:**
+2. **Aplicar as migrações no banco de dados do Azure Database:**
    Na pasta `fcg-fase-02--users`:
    ```powershell
    dotnet ef database update --project src/FCG02.UsersAPI.Infrastructure --startup-project src/FCG02.UsersAPI.API
@@ -197,7 +194,7 @@ Para um aprofundamento específico em cada camada arquitetural da UsersAPI, cons
 - **[🏛️ Arquitetura e Decisões de Design](docs/architecture.md)**
 - **[🧩 Camada de Domínio & DDD](docs/domain.md)**
 - **[⚙️ Camada de Aplicação, DTOs e Casos de Uso](docs/application.md)**
-- **[🐘 Camada de Infraestrutura, EF Core e RabbitMQ](docs/infrastructure.md)**
+- **[☁️ Camada de Infraestrutura, EF Core e RabbitMQ](docs/infrastructure.md)**
 - **[🚀 Camada de Apresentação, Minimal APIs e JWT](docs/api.md)**
 - **[🧪 Suíte de Testes Unitários](docs/tests.md)**
 - **[🐳 Containerização e Docker Multi-stage](docs/docker.md)**

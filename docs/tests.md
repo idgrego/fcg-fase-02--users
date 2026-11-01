@@ -21,7 +21,7 @@ A suíte de testes unitários em **`tests/FCG02.UsersAPI.UnitTests`** é constru
 
 ## 1. Visão Geral e Pirâmide de Testes
 
-Os testes unitários focam na base da pirâmide de testes: **execução ultrarrápida (milissegundos)**, sem conexão de rede e sem dependência de containers PostgreSQL ou RabbitMQ ativos.
+Os testes unitários focam na base da pirâmide de testes: **execução ultrarrápida (milissegundos)**, sem conexão de rede e sem dependência de instâncias externas de banco de dados no Azure Database ou RabbitMQ ativos.
 
 ```mermaid
 graph TD
