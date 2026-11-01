@@ -24,6 +24,7 @@ graph TD
     Api["🌐 Apresentação & Minimal APIs (api.md)"]:::api
     Tests["🧪 Testes Unitários (tests.md)"]:::tests
     Docker["🐳 Containerização & Docker (docker.md)"]:::docker
+    K8s["☸️ Orquestração K8s (k8s.md)"]:::docker
 
     Index --> Arch
     Index --> Domain
@@ -32,6 +33,7 @@ graph TD
     Index --> Api
     Index --> Tests
     Index --> Docker
+    Index --> K8s
 
     Arch -.-> Domain
     Domain -.-> App
@@ -40,6 +42,7 @@ graph TD
     App -.-> Tests
     Domain -.-> Tests
     Api -.-> Docker
+    Docker -.-> K8s
 ```
 
 ---
@@ -88,4 +91,11 @@ Guia de empacotamento para ambientes de nuvem:
 - `Dockerfile` multi-stage com otimização de camadas de cache.
 - Execução segura com usuário não-privilegiado (`USER app`).
 - Diretivas do `.dockerignore` e comandos de execução.
+
+### 8. [☸️ Orquestração com Kubernetes (`k8s.md`)](k8s.md)
+Arquitetura de implantação em clusters Kubernetes:
+- Manifestos na pasta `/k8s` (`ConfigMap`, `Secret` em Base64, `Deployment`, `Service` ClusterIP).
+- Réplicas de Pods com alta disponibilidade (sem Pods isolados).
+- Sondas de integridade (`readinessProbe` e `livenessProbe`) integradas ao endpoint `/health`.
+- Limites e requisições de recursos computacionais (`resources: requests/limits`).
 

@@ -1,0 +1,21 @@
+# Service cria um ponto de acess de rede estável (com endereço de IP virtual e nome DNS interno) 
+# para distribuir as requisições entre os Pods do Deployment.
+
+# Sem o 'Service' cada container receberia um IP dinâmico e, por ser dinâmico, em caso de falha, ao ser recriado receberia um novo IP.
+# O 'Service' garante que o container sempre estará acessível em um IP constante
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: users-api-service
+  labels:
+    app: users-api
+spec:
+  type: ClusterIP # exposição estável dentro da rede interna do cluster
+  selector:
+    app: users-api # direciona tráfego para os Pods com label app: users-api
+  ports:
+    - protocol: TCP
+      port: 80 # porta interna que outros microsserviços acessam (ex: http://users-api-service:80)
+      targetPort: 8080 # porta readl onde a UserAPI escuta dentro do Pod
+      

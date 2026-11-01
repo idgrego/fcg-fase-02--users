@@ -1,0 +1,16 @@
+# ConfigMap armazena variáveis de ambiente que não contém dados confidenciais.
+
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: users-api-config
+  labels:
+    app: users-api
+data:
+  ASPNETCORE_ENVIRONMENT: "Production"
+  RabbitMQ__HostName: "rabbitmq-service" # Nome DNS do serviço do RabbitMQ no cluster K8s
+  RabbitMQ__UserName: "guest"
+  RabbitMQ__Exchange: "fcg.users.events"
+  Jwt__Issuer: "FCG02.UsersAPI"
+  JWT__Audience: "FCG02.CloudGamesClients"
+  Jwt__ExpirationInSeconds: "7200"

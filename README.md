@@ -201,3 +201,4 @@ Para um aprofundamento específico em cada camada arquitetural da UsersAPI, cons
 - **[🚀 Camada de Apresentação, Minimal APIs e JWT](docs/api.md)**
 - **[🧪 Suíte de Testes Unitários](docs/tests.md)**
 - **[🐳 Containerização e Docker Multi-stage](docs/docker.md)**
+- **[☸️ Orquestração com Kubernetes](docs/k8s.md)**

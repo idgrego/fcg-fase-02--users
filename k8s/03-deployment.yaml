@@ -1,0 +1,57 @@
+# Deployment é o controlador responsável por manter o nro desejado de instâncias (Pods) ativas,
+# gerencias atualizações sem indisponibilidade (Rolling Updates) e aplicar sondas de verificação
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: users-api-deployment
+  labels:
+    app: users-api
+spec:
+  replicas: 2 # garante alta disponibilidade (mín de 2 Pods)
+  selector:
+    matchLabels:
+      app: users-api
+  template:
+    metadata:
+      labels:
+        app: users-api
+    spec:
+      containers:
+        - name: users-api
+          image: fcg-fase-02--orchestration-users-api:v1
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 8080
+          envFrom:
+            # injeta todas as chaves do ConfigMap como variáveis de ambiente
+            - configMapRef:
+                name: users-api-config
+            # injeta todas as chaves do Secret como variáveis de ambiente
+            - secretRef:
+                name: users-api-secret
+          #sonda de prontidão: o Pod só recebe requisições se /health retornar 200 OK
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: 8080
+            initialDelaySeconds: 5
+            periodSeconds: 10
+            timeoutSeconds: 2
+            failureThreshold: 3
+          # sonda de sobrevivência: se a API travar (deadlock), o k8s reinicia o Pod automaticamente
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 8080
+            initialDelaySeconds: 15
+            periodSeconds: 20
+            timeoutSeconds: 2
+            failureThreshold: 3
+          resources:
+            requests:
+              memory: "128Mi"
+              cpu: "100m"
+            limits:
+              memory: "256Mi"
+              cpu: "300m"
