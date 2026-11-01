@@ -13,7 +13,7 @@
 
 > 🌐 **Documentação Principal e Orquestração do Ecossistema:**  
 > A visão geral de toda a solução distribuída, a topologia de pastas, a arquitetura de redes e o guia para inicialização unificada de todos os microsserviços e bancos de dados estão centralizadas no repositório de **Orquestração**:  
-> 👉 **[🚀 Acessar Ponto de Partida & Orquestração (`fcg-fase-02--orchestration`)](../fcg-fase-02--orchestration/README.md)** | [Repositório GitHub](https://github.com/idgrego/fcg-fase-02--orchestration)
+> 👉 **[🚀 Acessar Ponto de Partida & Orquestração (`fcg-fase-02--orchestration`)](https://github.com/idgrego/fcg-fase-02--orchestration)**
 
 ---
 
