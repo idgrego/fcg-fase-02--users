@@ -19,7 +19,7 @@ public static class DependencyInjection
 
         // Configura o DbContext com a string de conexão do appsettings.json
         services.AddDbContext<UserDbContext>(options =>
-            options.UseNpgsql(connectionString));
+            options.UseSqlServer(connectionString, sqlOptions => sqlOptions.EnableRetryOnFailure()));
 
         // Registra o repositório de usuários
         services.AddScoped<IUserRepository, UserRepository>();
