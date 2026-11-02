@@ -131,6 +131,26 @@ A API estará acessível em `http://localhost:5000` (ou na porta HTTP informada 
 
 ---
 
+### 3.3. Dicionário de Variáveis de Ambiente
+
+As seguintes variáveis configuram o comportamento da **UsersAPI** em contêineres e ambientes produtivos:
+
+| Variável de Ambiente | Descrição | Exemplo de Valor |
+|---|---|---|
+| `ASPNETCORE_ENVIRONMENT` | Perfil de execução do ASP.NET Core | `Development` ou `Production` |
+| `ConnectionStrings__DefaultConnection` | String de conexão para o Azure Database (`fcg-02-usersdb`) | `Server=tcp:...;Database=fcg-02-usersdb;...` |
+| `RabbitMQ__HostName` | Endereço do broker RabbitMQ | `rabbitmq` ou `localhost` |
+| `RabbitMQ__Port` | Porta do broker RabbitMQ | `5672` |
+| `RabbitMQ__UserName` | Usuário de autenticação no RabbitMQ | `guest` |
+| `RabbitMQ__Password` | Senha de autenticação no RabbitMQ | `guest` |
+| `RabbitMQ__Exchange` | Exchange do tipo topic para publicação de eventos | `fcg.users.events` |
+| `Jwt__SecretKey` | Chave criptográfica HMAC-SHA256 para assinatura dos tokens | Chave simétrica com mais de 32 caracteres |
+| `Jwt__Issuer` | Emissor dos tokens JWT | `FCG02.UsersAPI` |
+| `Jwt__Audience` | Destinatário dos tokens JWT | `FCG02.CloudGamesClients` |
+| `Jwt__ExpirationInSeconds` | Tempo de validade do token de acesso em segundos | `7200` |
+
+---
+
 ## 4. Endpoints HTTP & Documentação Interativa (Scalar)
 
 Com o serviço em execução, acesse a interface interativa do **Scalar**:

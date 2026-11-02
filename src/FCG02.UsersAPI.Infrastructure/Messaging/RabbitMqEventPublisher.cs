@@ -42,7 +42,7 @@ public class RabbitMqEventPublisher : IEventPublisher, IAsyncDisposable
             if (_connection is not null && _connection.IsOpen)
                 return _connection;
 
-            _logger.LogInformation("🔌 Conectando ao RabbitMQ em {Host}:{Port}...", _settings.HostName, _settings.Port);
+            _logger.LogDebug("🔌 Conectando ao RabbitMQ em {Host}:{Port}...", _settings.HostName, _settings.Port);
             _connection = await _factory.CreateConnectionAsync(cancellationToken);
             return _connection;
         }
@@ -95,7 +95,7 @@ public class RabbitMqEventPublisher : IEventPublisher, IAsyncDisposable
                 body: body,
                 cancellationToken: cancellationToken);
 
-            _logger.LogInformation("🚀 [RabbitMQ] Evento '{EventName}' publicado com sucesso na exchange '{Exchange}' (RoutingKey: '{RoutingKey}')",
+            _logger.LogDebug("🚀 [RabbitMQ] Evento '{EventName}' publicado com sucesso na exchange '{Exchange}' (RoutingKey: '{RoutingKey}')",
                 eventName, _settings.Exchange, routingKey);
         }
         catch (Exception ex)
